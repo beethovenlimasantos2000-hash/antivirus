@@ -1,0 +1,42 @@
+name: Build USB Guardian (amd64)
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-deb:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Debian package
+        run: |
+          set -eux
+          PKG="usb-guardian_1.0.0_amd64"
+          mkdir -p "dist/$PKG/DEBIAN" "dist/$PKG/usr/bin" "dist/$PKG/usr/share/usb-guardian" "dist/$PKG/usr/share/applications" "dist/$PKG/usr/share/icons/hicolor/scalable/apps"
+          install -m 0755 src/usb_guardian.py "dist/$PKG/usr/share/usb-guardian/usb_guardian.py"
+          printf '#!/bin/sh\nexec /usr/bin/python3 /usr/share/usb-guardian/usb_guardian.py "$@"\n' > "dist/$PKG/usr/bin/usb-guardian"
+          chmod 0755 "dist/$PKG/usr/bin/usb-guardian"
+          install -m 0644 packaging/usb-guardian.desktop "dist/$PKG/usr/share/applications/usb-guardian.desktop"
+          install -m 0644 packaging/usb-guardian.svg "dist/$PKG/usr/share/icons/hicolor/scalable/apps/usb-guardian.svg"
+          cat > "dist/$PKG/DEBIAN/control" <<'EOF'
+          Package: usb-guardian
+          Version: 1.0.0
+          Section: utils
+          Priority: optional
+          Architecture: amd64
+          Depends: python3, python3-tk, usbutils, udev
+          Recommends: clamav
+          Maintainer: USB Guardian contributors
+          Description: USB device diagnostics and local file triage
+           Read-only USB enumeration diagnostics and optional ClamAV file scanning.
+          EOF
+          dpkg-deb --build --root-owner-group "dist/$PKG"
+          mv "dist/$PKG.deb" dist/usb-guardian_1.0.0_amd64.deb
+      - name: Upload Debian package
+        uses: actions/upload-artifact@v4
+        with:
+          name: usb-guardian-deb-amd64
+          path: dist/usb-guardian_1.0.0_amd64.deb
+          if-no-files-found: error
