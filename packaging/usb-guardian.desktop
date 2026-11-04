@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=USB Guardian
+Comment=Diagnóstico USB e triagem de arquivos
+Exec=usb-guardian
+Icon=usb-guardian
+Terminal=false
+Type=Application
+Categories=System;Security;Utility;
