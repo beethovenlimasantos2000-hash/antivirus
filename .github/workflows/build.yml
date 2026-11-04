@@ -33,7 +33,6 @@ jobs:
            Read-only USB enumeration diagnostics and optional ClamAV file scanning.
           EOF
           dpkg-deb --build --root-owner-group "dist/$PKG"
-          mv "dist/$PKG.deb" dist/usb-guardian_1.0.0_amd64.deb
       - name: Upload Debian package
         uses: actions/upload-artifact@v4
         with:
